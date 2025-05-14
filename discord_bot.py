@@ -2,6 +2,12 @@ import discord
 from discord.ext import commands
 import yt_dlp
 import asyncio
+import os
+from dotenv import load_dotenv  # .env 파일을 읽기 위해 필요
+
+# .env 파일에서 환경변수 로드
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -29,7 +35,6 @@ async def play(ctx, url):
 
     voice = ctx.voice_client
 
-    # 유튜브에서 오디오 추출
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
@@ -40,14 +45,13 @@ async def play(ctx, url):
         info = ydl.extract_info(url, download=False)
         audio_url = info['url']
 
-    # FFMPEG 재생
     ffmpeg_options = {
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         'options': '-vn'
     }
 
     source = await discord.FFmpegOpusAudio.from_probe(audio_url, **ffmpeg_options)
-    voice.stop()  # 혹시 재생 중이던 곡 멈춤
+    voice.stop()
     voice.play(source, after=lambda e: print(f"재생 종료: {e}"))
 
     await ctx.send(f"🎶 재생 중: **{info['title']}**")
@@ -69,6 +73,6 @@ async def leave(ctx):
         await ctx.send("👋 음성 채널에서 나갔어요.")
     else:
         await ctx.send("❌ 음성 채널에 연결되어 있지 않아요.")
-        
-# 여기에 본인의 봇 토큰을 입력하세요
-bot.run('MTM3MjEwNzc1NjUxNzA2NDcyNA.GZvYXG.cwEdqYqc4ZGy3stP7k0rQ-W_sq0d54RPMy-Rjg')
+
+# ✅ 봇 실행
+bot.run(TOKEN)
